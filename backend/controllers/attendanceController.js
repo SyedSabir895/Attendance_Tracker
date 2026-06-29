@@ -63,10 +63,9 @@ const getAttendance = asyncHandler(async (req, res) => {
 // @route   GET /api/attendance/today
 // @access  Admin
 const getTodayAttendance = asyncHandler(async (req, res) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const todayEnd = new Date();
-  todayEnd.setHours(23, 59, 59, 999);
+  const now = new Date();
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
+  const todayEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
 
   // Get all active employees
   const employees = await Employee.find({ status: 'active' })
@@ -127,8 +126,8 @@ const markBulkAttendance = asyncHandler(async (req, res) => {
     throw new Error('Records array and date are required');
   }
 
-  const attendanceDate = new Date(date);
-  attendanceDate.setHours(0, 0, 0, 0);
+  const [y, m, d] = date.split('-').map(Number);
+  const attendanceDate = new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0));
 
   const results = [];
   const errors = [];
@@ -137,9 +136,10 @@ const markBulkAttendance = asyncHandler(async (req, res) => {
     try {
       const { employeeId, status, checkIn, checkOut, remarks, leaveType } = record;
 
+      const dayEnd = new Date(attendanceDate.getTime() + 86399999);
       const existing = await Attendance.findOne({
         employee: employeeId,
-        date: { $gte: attendanceDate, $lte: new Date(attendanceDate.getTime() + 86399999) },
+        date: { $gte: attendanceDate, $lte: dayEnd },
       });
 
       if (existing) {
@@ -242,9 +242,9 @@ const deleteAttendance = asyncHandler(async (req, res) => {
 // @route   GET /api/attendance/date/:date
 // @access  Admin
 const getAttendanceByDate = asyncHandler(async (req, res) => {
-  const date = new Date(req.params.date);
-  date.setHours(0, 0, 0, 0);
-  const dateEnd = new Date(date.getTime() + 86399999);
+  const [y, m, d] = req.params.date.split('-').map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0));
+  const dateEnd = new Date(Date.UTC(y, m - 1, d, 23, 59, 59, 999));
 
   const records = await Attendance.find({ date: { $gte: date, $lte: dateEnd } })
     .populate({

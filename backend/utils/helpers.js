@@ -9,25 +9,21 @@ const getDateRange = (period, year, month) => {
   let start, end;
 
   if (period === 'today') {
-    start = new Date(now.setHours(0, 0, 0, 0));
-    end = new Date(now.setHours(23, 59, 59, 999));
+    start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 23, 59, 59, 999));
   } else if (period === 'week') {
-    const day = now.getDay();
-    start = new Date(now);
-    start.setDate(now.getDate() - day);
-    start.setHours(0, 0, 0, 0);
-    end = new Date(start);
-    end.setDate(start.getDate() + 6);
-    end.setHours(23, 59, 59, 999);
+    const day = now.getUTCDay();
+    start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - day));
+    end = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - day + 6, 23, 59, 59, 999));
   } else if (period === 'month') {
-    const y = year || now.getFullYear();
-    const m = month !== undefined ? month - 1 : now.getMonth();
-    start = new Date(y, m, 1);
-    end = new Date(y, m + 1, 0, 23, 59, 59, 999);
+    const y = year || now.getUTCFullYear();
+    const m = month !== undefined ? month - 1 : now.getUTCMonth();
+    start = new Date(Date.UTC(y, m, 1));
+    end = new Date(Date.UTC(y, m + 1, 0, 23, 59, 59, 999));
   } else if (period === 'year') {
-    const y = year || now.getFullYear();
-    start = new Date(y, 0, 1);
-    end = new Date(y, 11, 31, 23, 59, 59, 999);
+    const y = year || now.getUTCFullYear();
+    start = new Date(Date.UTC(y, 0, 1));
+    end = new Date(Date.UTC(y, 11, 31, 23, 59, 59, 999));
   }
 
   return { start, end };

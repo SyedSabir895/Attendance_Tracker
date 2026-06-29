@@ -118,8 +118,6 @@ export default function Employees() {
               <tr>
                 <th className="table-header">Employee</th>
                 <th className="table-header">ID</th>
-                <th className="table-header">Department</th>
-                <th className="table-header">Designation</th>
                 <th className="table-header">Joining</th>
                 <th className="table-header">Status</th>
                 <th className="table-header text-right">Actions</th>
@@ -127,10 +125,10 @@ export default function Employees() {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {loading ? (
-                <tr><td colSpan={7} className="p-0"><TableSkeleton rows={8} cols={7} /></td></tr>
+                <tr><td colSpan={5} className="p-0"><TableSkeleton rows={8} cols={5} /></td></tr>
               ) : employees.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-12 text-gray-400">No employees found</td>
+                  <td colSpan={5} className="text-center py-12 text-gray-400">No employees found</td>
                 </tr>
               ) : employees.map((emp) => (
                 <motion.tr
@@ -144,13 +142,10 @@ export default function Employees() {
                       <Avatar name={`${emp.firstName} ${emp.lastName}`} src={emp.profilePhoto} size="sm" />
                       <div>
                         <p className="font-medium text-gray-900 dark:text-white">{emp.firstName} {emp.lastName}</p>
-                        <p className="text-xs text-gray-400">{emp.email}</p>
                       </div>
                     </div>
                   </td>
                   <td className="table-cell font-mono text-xs">{emp.employeeId}</td>
-                  <td className="table-cell">{emp.department?.name || '—'}</td>
-                  <td className="table-cell">{emp.designation?.title || '—'}</td>
                   <td className="table-cell text-xs">{emp.joiningDate ? new Date(emp.joiningDate).toLocaleDateString() : '—'}</td>
                   <td className="table-cell"><Badge status={emp.status} /></td>
                   <td className="table-cell">

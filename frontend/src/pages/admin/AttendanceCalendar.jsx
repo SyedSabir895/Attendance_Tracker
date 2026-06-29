@@ -44,7 +44,7 @@ export default function AttendanceCalendar() {
 
       const map = {};
       data.data.forEach((rec) => {
-        const d = new Date(rec.date).getDate();
+        const d = new Date(rec.date).getUTCDate();
         if (!map[d]) map[d] = [];
         map[d].push(rec);
       });
@@ -59,7 +59,7 @@ export default function AttendanceCalendar() {
     setSelectedDate(clickedDate);
     setLoading(true);
     try {
-      const dateStr = clickedDate.toISOString().split('T')[0];
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const { data } = await attendanceAPI.getByDate(dateStr);
       setDayRecords(data.data);
     } catch (err) {

@@ -22,6 +22,7 @@ export default function Attendance() {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [attendance, setAttendance] = useState({});
   const [remarks, setRemarks] = useState({});
@@ -52,10 +53,12 @@ export default function Attendance() {
   useEffect(() => { fetchToday(); }, [fetchToday]);
 
   const setStatus = (empId, status) => {
+    setSaved(false);
     setAttendance((prev) => ({ ...prev, [empId]: prev[empId] === status ? null : status }));
   };
 
   const markAll = (status) => {
+    setSaved(false);
     const map = {};
     records.forEach(({ employee }) => { map[employee._id] = status; });
     setAttendance(map);
@@ -69,9 +72,11 @@ export default function Attendance() {
     }));
 
     setSaving(true);
+    setSaved(false);
     try {
       await attendanceAPI.markBulk({ records: toSave, date });
       toast.success('Attendance saved successfully!');
+      setSaved(true);
       fetchToday();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Save failed');
@@ -98,7 +103,7 @@ export default function Attendance() {
             className="input w-auto"
           />
           <Button variant="secondary" icon={MdRefresh} onClick={fetchToday}>Refresh</Button>
-          <Button icon={MdSave} onClick={saveAll} loading={saving}>Save All</Button>
+          <Button icon={MdSave} onClick={saveAll} loading={saving} className={saved ? 'opacity-40' : ''}>Save All</Button>
         </div>
       </div>
 
@@ -179,8 +184,8 @@ export default function Attendance() {
 
       {/* Save button */}
       <div className="flex justify-end">
-        <Button icon={MdSave} onClick={saveAll} loading={saving} size="lg">
-          Save Attendance ({markedCount}/{records.length})
+        <Button icon={MdSave} onClick={saveAll} loading={saving} size="lg" className={saved ? 'opacity-40' : ''}>
+          {saved ? 'Saved ✓' : `Save Attendance (${markedCount}/${records.length})`}
         </Button>
       </div>
     </div>

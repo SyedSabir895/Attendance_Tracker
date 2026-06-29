@@ -92,41 +92,19 @@ const createEmployee = asyncHandler(async (req, res) => {
 
   const employeeId = await generateEmployeeId(Employee);
   const joiningDate = new Date();
-  const currentYear = joiningDate.getFullYear();
-
-  // Auto-generate unique email
-  const baseEmail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}`;
-  let email = `${baseEmail}@staff.local`;
-  const collision = await Employee.findOne({ email });
-  if (collision) email = `${baseEmail}.${Date.now()}@staff.local`;
 
   const employee = await Employee.create({
     employeeId,
     firstName,
     lastName,
-    email,
     joiningDate,
     createdBy: req.user.id,
   });
 
-  const tempPassword = `${firstName.toLowerCase()}@${currentYear}`;
-  const user = await User.create({
-    name: `${firstName} ${lastName}`,
-    email,
-    password: tempPassword,
-    role: 'employee',
-    employeeId: employee._id,
-  });
-
-  employee.userId = user._id;
-  await employee.save();
-
-  const populated = await Employee.findById(employee._id);
-
   res.status(201).json({
     success: true,
-    data: populated,
-    message: `Employee created. Temporary password: ${tempPassword}`,
+    data: employee,
+    message: 'Employee created successfully',
   });
 });
 
