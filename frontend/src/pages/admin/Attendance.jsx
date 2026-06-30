@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { MdSave, MdRefresh, MdCalendarToday } from 'react-icons/md';
+import { MdSave, MdRefresh } from 'react-icons/md';
 import { attendanceAPI } from '../../api/attendance.api';
+import { employeeAPI } from '../../api/employee.api';
 import Button from '../../components/common/Button';
-import Badge from '../../components/common/Badge';
 import Avatar from '../../components/common/Avatar';
 import { TableSkeleton } from '../../components/common/Skeleton';
 import toast from 'react-hot-toast';
@@ -18,30 +17,65 @@ const STATUS_OPTIONS = [
   { value: 'late', label: 'LT', color: 'bg-orange-500 hover:bg-orange-600', textColor: 'text-white' },
 ];
 
+const todayStr = () => {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+};
+
+const isWeekend = (dateStr) => {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const day = new Date(y, m - 1, d).getDay();
+  return day === 0 || day === 6;
+};
+
 export default function Attendance() {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(todayStr());
   const [attendance, setAttendance] = useState({});
   const [remarks, setRemarks] = useState({});
 
-  const fetchToday = useCallback(async () => {
+  const fetchForDate = useCallback(async (selectedDate) => {
     setLoading(true);
     try {
-      const { data } = await attendanceAPI.getToday();
-      setRecords(data.data);
+      // Always get full employee list + that date's records
+      const [empRes, attRes] = await Promise.all([
+        employeeAPI.getAll({ limit: 500, status: 'active' }),
+        attendanceAPI.getByDate(selectedDate),
+      ]);
 
+      const employees = empRes.data.data;
+      const attRecords = attRes.data.data;
+
+      // Build map: employeeId → attendance record
       const attMap = {};
       const remMap = {};
-      data.data.forEach(({ employee, attendance: att }) => {
-        if (att) {
-          attMap[employee._id] = att.status;
-          remMap[employee._id] = att.remarks || '';
+      attRecords.forEach((rec) => {
+        const empId = rec.employee?._id || rec.employee;
+        if (empId) {
+          attMap[empId] = rec.status;
+          remMap[empId] = rec.remarks || '';
         }
       });
-      setAttendance(attMap);
+
+      // Merge: each employee + their record for this date
+      const merged = employees.map((emp) => ({
+        employee: emp,
+        attendance: attRecords.find((r) => (r.employee?._id || r.employee) === emp._id) || null,
+      }));
+
+      setRecords(merged);
+
+      // Auto-mark all as holiday on weekends
+      if (isWeekend(selectedDate)) {
+        const holidayMap = {};
+        employees.forEach((emp) => { holidayMap[emp._id] = 'holiday'; });
+        setAttendance(holidayMap);
+      } else {
+        setAttendance(attMap);
+      }
       setRemarks(remMap);
     } catch (err) {
       toast.error('Failed to load attendance');
@@ -50,7 +84,7 @@ export default function Attendance() {
     }
   }, []);
 
-  useEffect(() => { fetchToday(); }, [fetchToday]);
+  useEffect(() => { fetchForDate(date); }, [date, fetchForDate]);
 
   const setStatus = (empId, status) => {
     setSaved(false);
@@ -77,7 +111,7 @@ export default function Attendance() {
       await attendanceAPI.markBulk({ records: toSave, date });
       toast.success('Attendance saved successfully!');
       setSaved(true);
-      fetchToday();
+      fetchForDate(date);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Save failed');
     } finally {
@@ -99,10 +133,18 @@ export default function Attendance() {
           <input
             type="date"
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (isWeekend(val)) {
+                toast.error('Weekends are holidays — select a weekday');
+                return;
+              }
+              setSaved(false);
+              setDate(val);
+            }}
             className="input w-auto"
           />
-          <Button variant="secondary" icon={MdRefresh} onClick={fetchToday}>Refresh</Button>
+          <Button variant="secondary" icon={MdRefresh} onClick={() => fetchForDate(date)}>Refresh</Button>
           <Button icon={MdSave} onClick={saveAll} loading={saving} className={saved ? 'opacity-40' : ''}>Save All</Button>
         </div>
       </div>
@@ -140,7 +182,7 @@ export default function Attendance() {
                 <tr><td colSpan={10}><TableSkeleton rows={8} cols={5} /></td></tr>
               ) : records.length === 0 ? (
                 <tr><td colSpan={10} className="text-center py-12 text-gray-400">No active employees found</td></tr>
-              ) : records.map(({ employee, attendance: existingAtt }) => (
+              ) : records.map(({ employee }) => (
                 <tr key={employee._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td className="table-cell">
                     <div className="flex items-center gap-3">

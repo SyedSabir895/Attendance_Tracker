@@ -22,11 +22,11 @@ const sendTokenResponse = (user, statusCode, res) => {
   });
 };
 
-// @desc    Register admin
+// @desc    Register employee
 // @route   POST /api/auth/register
-// @access  Public (first admin) or Admin only
+// @access  Public
 const register = asyncHandler(async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password } = req.body;
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
@@ -34,15 +34,7 @@ const register = asyncHandler(async (req, res) => {
     throw new Error('User already exists with this email');
   }
 
-  const adminCount = await User.countDocuments({ role: 'admin' });
-  const assignedRole = adminCount === 0 ? 'admin' : (role || 'employee');
-
-  if (assignedRole === 'admin' && req.user && req.user.role !== 'admin') {
-    res.status(403);
-    throw new Error('Only admins can create admin accounts');
-  }
-
-  const user = await User.create({ name, email, password, role: assignedRole });
+  const user = await User.create({ name, email, password, role: 'employee' });
   sendTokenResponse(user, 201, res);
 });
 

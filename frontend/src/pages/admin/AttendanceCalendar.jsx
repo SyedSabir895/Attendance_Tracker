@@ -133,18 +133,22 @@ export default function AttendanceCalendar() {
                   className={`relative aspect-square flex flex-col items-center justify-start p-1 rounded-xl text-sm transition-all ${
                     isSelected ? 'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/20' :
                     isToday ? 'bg-primary-600 text-white' :
-                    isWeekend ? 'bg-gray-50 dark:bg-gray-800 text-gray-400' :
+                    isWeekend ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-400' :
                     'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                   }`}
                 >
                   <span className={`font-semibold text-xs ${isToday ? 'text-white' : ''}`}>{day}</span>
-                  {dayRecs.length > 0 && (
+                  {isWeekend && dayRecs.length === 0 ? (
+                    <div className="flex gap-0.5 mt-0.5 justify-center">
+                      <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                    </div>
+                  ) : dayRecs.length > 0 ? (
                     <div className="flex flex-wrap gap-0.5 mt-0.5 justify-center">
                       {dayRecs.slice(0, 4).map((rec, ri) => (
                         <span key={ri} className={`w-1.5 h-1.5 rounded-full ${STATUS_COLORS[rec.status] || 'bg-gray-400'}`} />
                       ))}
                     </div>
-                  )}
+                  ) : null}
                 </button>
               );
             })}
@@ -173,6 +177,11 @@ export default function AttendanceCalendar() {
               <div className="flex justify-center py-8"><div className="animate-spin h-6 w-6 rounded-full border-b-2 border-primary-600" /></div>
             ) : !selectedDate ? (
               <p className="text-center text-gray-400 py-8 text-sm">Click a date to view attendance</p>
+            ) : dayRecords.length === 0 && [0, 6].includes(selectedDate?.getDay()) ? (
+              <div className="text-center py-8">
+                <span className="inline-block px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-sm font-medium">Weekend</span>
+                <p className="text-gray-400 text-xs mt-2">No attendance on weekends</p>
+              </div>
             ) : dayRecords.length === 0 ? (
               <p className="text-center text-gray-400 py-8 text-sm">No records for this date</p>
             ) : (

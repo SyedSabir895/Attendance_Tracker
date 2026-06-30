@@ -12,6 +12,7 @@ export default function EmployeeForm({ employee, onSuccess, onCancel }) {
     defaultValues: employee ? {
       firstName: employee.firstName,
       lastName: employee.lastName,
+      dateOfBirth: employee.dateOfBirth ? new Date(employee.dateOfBirth).toISOString().split('T')[0] : '',
     } : {},
   });
 
@@ -51,6 +52,13 @@ export default function EmployeeForm({ employee, onSuccess, onCancel }) {
           {...register('lastName', { required: 'Required' })}
         />
       </div>
+
+      <Input
+        label="Date of Birth"
+        type="date"
+        error={errors.dateOfBirth?.message}
+        {...register('dateOfBirth')}
+      />
 
       <div className="flex gap-3 pt-2">
         <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">Cancel</Button>

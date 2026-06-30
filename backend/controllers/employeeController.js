@@ -83,7 +83,7 @@ const getMyProfile = asyncHandler(async (req, res) => {
 // @route   POST /api/employees
 // @access  Admin
 const createEmployee = asyncHandler(async (req, res) => {
-  const { firstName, lastName } = req.body;
+  const { firstName, lastName, dateOfBirth } = req.body;
 
   if (!firstName || !lastName) {
     res.status(400);
@@ -93,13 +93,16 @@ const createEmployee = asyncHandler(async (req, res) => {
   const employeeId = await generateEmployeeId(Employee);
   const joiningDate = new Date();
 
-  const employee = await Employee.create({
+  const employeeData = {
     employeeId,
     firstName,
     lastName,
     joiningDate,
     createdBy: req.user.id,
-  });
+  };
+  if (dateOfBirth) employeeData.dateOfBirth = dateOfBirth;
+
+  const employee = await Employee.create(employeeData);
 
   res.status(201).json({
     success: true,
@@ -118,10 +121,11 @@ const updateEmployee = asyncHandler(async (req, res) => {
     throw new Error('Employee not found');
   }
 
-  const { firstName, lastName } = req.body;
+  const { firstName, lastName, dateOfBirth } = req.body;
   const updates = { updatedBy: req.user.id };
   if (firstName) updates.firstName = firstName;
   if (lastName) updates.lastName = lastName;
+  if (dateOfBirth !== undefined) updates.dateOfBirth = dateOfBirth || null;
 
   employee = await Employee.findByIdAndUpdate(req.params.id, updates, {
     new: true,
