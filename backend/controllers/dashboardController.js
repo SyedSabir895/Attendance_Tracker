@@ -97,12 +97,14 @@ const getAdminDashboard = asyncHandler(async (req, res) => {
   }));
 
   // Recent activity (last 10 attendance records)
-  const recentActivity = await Attendance.find({ date: { $gte: todayStart, $lte: todayEnd } })
+  let recentActivity = await Attendance.find({ date: { $gte: todayStart, $lte: todayEnd } })
     .populate({ path: 'employee', select: 'firstName lastName profilePhoto employeeId' })
     .populate('createdBy', 'name')
     .sort({ createdAt: -1 })
-    .limit(10)
+    .limit(20) // overfetch to allow filtering
     .lean();
+    
+  recentActivity = recentActivity.filter(activity => activity.employee).slice(0, 10);
 
   // Upcoming birthdays
   const today = new Date();

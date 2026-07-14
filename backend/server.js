@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -23,6 +23,7 @@ const holidayRoutes = require('./routes/holiday');
 const dashboardRoutes = require('./routes/dashboard');
 const reportRoutes = require('./routes/report');
 const notificationRoutes = require('./routes/notification');
+const taskRoutes = require('./routes/task');
 
 connectDB();
 
@@ -84,6 +85,7 @@ app.use('/api/holidays', holidayRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/tasks', taskRoutes);
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -104,3 +106,4 @@ process.on('unhandledRejection', (err) => {
 });
 
 module.exports = app;
+

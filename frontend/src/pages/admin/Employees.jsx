@@ -142,6 +142,7 @@ export default function Employees() {
                       <Avatar name={`${emp.firstName} ${emp.lastName}`} src={emp.profilePhoto} size="sm" />
                       <div>
                         <p className="font-medium text-gray-900 dark:text-white">{emp.firstName} {emp.lastName}</p>
+                        <p className="text-xs text-gray-400">{emp.email || 'No email'}</p>
                       </div>
                     </div>
                   </td>

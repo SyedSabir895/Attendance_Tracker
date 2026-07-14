@@ -12,6 +12,7 @@ export default function EmployeeForm({ employee, onSuccess, onCancel }) {
     defaultValues: employee ? {
       firstName: employee.firstName,
       lastName: employee.lastName,
+      email: employee.email || '',
       dateOfBirth: employee.dateOfBirth ? new Date(employee.dateOfBirth).toISOString().split('T')[0] : '',
     } : {},
   });
@@ -52,6 +53,19 @@ export default function EmployeeForm({ employee, onSuccess, onCancel }) {
           {...register('lastName', { required: 'Required' })}
         />
       </div>
+
+      <Input
+        label="Email"
+        type="email"
+        placeholder="john@example.com"
+        error={errors.email?.message}
+        {...register('email', {
+          pattern: {
+            value: /^\S+@\S+\.\S+$/,
+            message: 'Enter a valid email',
+          },
+        })}
+      />
 
       <Input
         label="Date of Birth"

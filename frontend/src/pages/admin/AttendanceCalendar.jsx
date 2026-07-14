@@ -191,7 +191,7 @@ export default function AttendanceCalendar() {
                     <Avatar name={rec.employee ? `${rec.employee.firstName} ${rec.employee.lastName}` : '?'} src={rec.employee?.profilePhoto} size="sm" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                        {rec.employee ? `${rec.employee.firstName} ${rec.employee.lastName}` : 'Unknown'}
+                        {rec.employee ? `${rec.employee.firstName} ${rec.employee.lastName}` : 'Deleted Employee'}
                       </p>
                       {rec.checkIn && <p className="text-xs text-gray-400">{rec.checkIn} – {rec.checkOut || '?'}</p>}
                     </div>

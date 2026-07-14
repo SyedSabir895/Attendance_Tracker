@@ -69,4 +69,37 @@ const sendLeaveStatusEmail = async (employeeEmail, employeeName, leaveType, stat
   return sendEmail({ to: employeeEmail, subject: `Leave Request ${status}`, html });
 };
 
-module.exports = { sendEmail, sendPasswordResetEmail, sendLeaveNotificationEmail, sendLeaveStatusEmail };
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+const sendTaskAssignmentEmail = async (employeeEmail, employeeName, taskTitle, priority, dueDate) => {
+  const html = `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;border:1px solid #e5e7eb;border-radius:8px;">
+      <h2 style="color:#111827;">New Task Assigned</h2>
+      <p style="color:#374151;">Hello <strong>${employeeName}</strong>,</p>
+      <p style="color:#374151;">A new task has been assigned to you.</p>
+      <div style="background-color:#f9fafb;padding:15px;border-radius:6px;margin:15px 0;">
+        <p style="margin:5px 0;"><strong>Title:</strong> ${taskTitle}</p>
+        <p style="margin:5px 0;"><strong>Priority:</strong> <span style="text-transform:capitalize;">${priority}</span></p>
+        <p style="margin:5px 0;"><strong>Due Date:</strong> ${new Date(dueDate).toDateString()}</p>
+      </div>
+      <p style="color:#374151;">Please log in to the portal to view more details.</p>
+      <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0;">
+      <p style="color:#9ca3af;font-size:12px;text-align:center;">© ${new Date().getFullYear()} Attendance System. All rights reserved.</p>
+    </div>
+  `;
+  
+  if (process.env.RESEND_API_KEY) {
+    return resend.emails.send({
+      from: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
+      to: [employeeEmail],
+      subject: `New Task Assigned: ${taskTitle}`,
+      html: html,
+    });
+  } else {
+    // Fallback if Resend API key is not present, use nodemailer if configured
+    return sendEmail({ to: employeeEmail, subject: `New Task Assigned: ${taskTitle}`, html });
+  }
+};
+
+module.exports = { sendEmail, sendPasswordResetEmail, sendLeaveNotificationEmail, sendLeaveStatusEmail, sendTaskAssignmentEmail };

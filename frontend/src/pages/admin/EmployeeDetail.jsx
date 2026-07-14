@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MdArrowBack, MdEdit, MdEmail, MdPhone, MdBusiness, MdWork, MdCalendarToday } from 'react-icons/md';
+import { MdArrowBack, MdEdit, MdPhone, MdBusiness, MdWork, MdCalendarToday } from 'react-icons/md';
 import { employeeAPI } from '../../api/employee.api';
 import { attendanceAPI } from '../../api/attendance.api';
 import Button from '../../components/common/Button';
@@ -72,13 +72,10 @@ export default function EmployeeDetail() {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{employee.firstName} {employee.lastName}</h2>
               <Badge status={employee.status} />
             </div>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">{employee.designation?.title} · {employee.department?.name}</p>
+            {/* /<p className="text-gray-500 dark:text-gray-400 mt-1">{employee.designation?.title} · {employee.department?.name}</p> */}
             <p className="text-xs font-mono text-gray-400 mt-1">ID: {employee.employeeId}</p>
             <div className="flex flex-wrap gap-4 mt-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                <MdEmail size={14} className="text-gray-400" /> {employee.email}
-              </div>
-              {employee.phone && (
+{employee.phone && (
                 <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                   <MdPhone size={14} className="text-gray-400" /> {employee.phone}
                 </div>

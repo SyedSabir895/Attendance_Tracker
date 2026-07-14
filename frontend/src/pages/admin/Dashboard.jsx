@@ -136,7 +136,7 @@ export default function AdminDashboard() {
                 <Avatar name={record.employee ? `${record.employee.firstName} ${record.employee.lastName}` : '?'} src={record.employee?.profilePhoto} size="sm" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {record.employee ? `${record.employee.firstName} ${record.employee.lastName}` : 'Unknown'}
+                    {record.employee ? `${record.employee.firstName} ${record.employee.lastName}` : 'Deleted Employee'}
                   </p>
                   <p className="text-xs text-gray-400">{record.employee?.employeeId}</p>
                 </div>

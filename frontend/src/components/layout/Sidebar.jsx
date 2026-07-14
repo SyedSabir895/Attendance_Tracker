@@ -1,10 +1,10 @@
-import { NavLink, useLocation } from 'react-router-dom';
+﻿import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import {
   MdDashboard, MdPeople, MdAccessTime, MdCalendarToday, MdHistory,
   MdBeachAccess, MdBusiness, MdWork, MdEventNote, MdBarChart,
-  MdSettings, MdPerson, MdClose,
+  MdSettings, MdPerson, MdClose, MdAssignment,
 } from 'react-icons/md';
 
 const adminLinks = [
@@ -16,6 +16,7 @@ const adminLinks = [
   { to: '/attendance/history', icon: MdHistory, label: 'History' },
   { label: 'MANAGEMENT', isHeader: true },
   { to: '/leaves', icon: MdBeachAccess, label: 'Leaves' },
+  { to: '/tasks', icon: MdAssignment, label: 'Tasks' },
   { to: '/holidays', icon: MdEventNote, label: 'Holidays' },
   { to: '/departments', icon: MdBusiness, label: 'Departments' },
   { to: '/designations', icon: MdWork, label: 'Designations' },
@@ -126,3 +127,4 @@ export default function Sidebar({ isOpen, onClose }) {
     </>
   );
 }
+

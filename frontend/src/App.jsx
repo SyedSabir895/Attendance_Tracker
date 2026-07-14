@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+﻿import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 
 // Layouts
@@ -24,6 +24,7 @@ import DesignationsPage from './pages/admin/Designations';
 import HolidaysPage from './pages/admin/Holidays';
 import ReportsPage from './pages/admin/Reports';
 import SettingsPage from './pages/admin/Settings';
+import TaskManagerPage from './pages/admin/TaskManager';
 
 // Employee pages
 import EmployeeDashboardPage from './pages/employee/Dashboard';
@@ -65,7 +66,7 @@ export default function App() {
 
       {/* Protected */}
       <Route element={<PrivateRoute><Layout /></PrivateRoute>}>
-        {/* Dashboard — role-based */}
+        {/* Dashboard â€” role-based */}
         <Route path="/dashboard" element={
           user?.role === 'admin'
             ? <PrivateRoute roles={['admin']}><AdminDashboardPage /></PrivateRoute>
@@ -79,6 +80,7 @@ export default function App() {
         <Route path="/attendance/calendar" element={<PrivateRoute roles={['admin']}><AttendanceCalendarPage /></PrivateRoute>} />
         <Route path="/attendance/history" element={<PrivateRoute roles={['admin']}><AttendanceHistoryPage /></PrivateRoute>} />
         <Route path="/leaves" element={<PrivateRoute roles={['admin']}><LeavesPage /></PrivateRoute>} />
+        <Route path="/tasks" element={<PrivateRoute roles={['admin']}><TaskManagerPage /></PrivateRoute>} />
         <Route path="/departments" element={<PrivateRoute roles={['admin']}><DepartmentsPage /></PrivateRoute>} />
         <Route path="/designations" element={<PrivateRoute roles={['admin']}><DesignationsPage /></PrivateRoute>} />
         <Route path="/holidays" element={<PrivateRoute roles={['admin']}><HolidaysPage /></PrivateRoute>} />
@@ -97,3 +99,4 @@ export default function App() {
     </Routes>
   );
 }
+

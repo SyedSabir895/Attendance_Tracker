@@ -83,7 +83,7 @@ const getMyProfile = asyncHandler(async (req, res) => {
 // @route   POST /api/employees
 // @access  Admin
 const createEmployee = asyncHandler(async (req, res) => {
-  const { firstName, lastName, dateOfBirth } = req.body;
+  const { firstName, lastName, email, dateOfBirth } = req.body;
 
   if (!firstName || !lastName) {
     res.status(400);
@@ -100,6 +100,16 @@ const createEmployee = asyncHandler(async (req, res) => {
     joiningDate,
     createdBy: req.user.id,
   };
+  if (email) {
+    const normalizedEmail = email.toLowerCase().trim();
+    const existingEmployee = await Employee.findOne({ email: normalizedEmail });
+    const existingUser = await User.findOne({ email: normalizedEmail });
+    if (existingEmployee || existingUser) {
+      res.status(400);
+      throw new Error('Email is already in use');
+    }
+    employeeData.email = normalizedEmail;
+  }
   if (dateOfBirth) employeeData.dateOfBirth = dateOfBirth;
 
   const employee = await Employee.create(employeeData);
@@ -121,10 +131,28 @@ const updateEmployee = asyncHandler(async (req, res) => {
     throw new Error('Employee not found');
   }
 
-  const { firstName, lastName, dateOfBirth } = req.body;
+  const { firstName, lastName, email, dateOfBirth } = req.body;
   const updates = { updatedBy: req.user.id };
   if (firstName) updates.firstName = firstName;
   if (lastName) updates.lastName = lastName;
+  if (email !== undefined) {
+    const normalizedEmail = email ? email.toLowerCase().trim() : '';
+    if (normalizedEmail) {
+      const existingEmployee = await Employee.findOne({
+        email: normalizedEmail,
+        _id: { $ne: employee._id },
+      });
+      const existingUser = await User.findOne({
+        email: normalizedEmail,
+        _id: { $ne: employee.userId },
+      });
+      if (existingEmployee || existingUser) {
+        res.status(400);
+        throw new Error('Email is already in use');
+      }
+    }
+    updates.email = normalizedEmail || undefined;
+  }
   if (dateOfBirth !== undefined) updates.dateOfBirth = dateOfBirth || null;
 
   employee = await Employee.findByIdAndUpdate(req.params.id, updates, {
@@ -132,10 +160,11 @@ const updateEmployee = asyncHandler(async (req, res) => {
     runValidators: true,
   });
 
-  if (firstName || lastName) {
-    await User.findByIdAndUpdate(employee.userId, {
-      name: `${employee.firstName} ${employee.lastName}`,
-    });
+  if (employee.userId && (firstName || lastName || email !== undefined)) {
+    const userUpdates = {};
+    if (firstName || lastName) userUpdates.name = `${employee.firstName} ${employee.lastName}`;
+    if (email !== undefined) userUpdates.email = employee.email;
+    await User.findByIdAndUpdate(employee.userId, userUpdates, { runValidators: true });
   }
 
   res.json({ success: true, data: employee, message: 'Employee updated successfully' });
@@ -155,6 +184,15 @@ const deleteEmployee = asyncHandler(async (req, res) => {
   if (employee.userId) {
     await User.findByIdAndUpdate(employee.userId, { isActive: false });
   }
+
+  const Attendance = require('../models/Attendance');
+  const Leave = require('../models/Leave');
+  const Task = require('../models/Task');
+
+  // Cascade delete related records
+  await Attendance.deleteMany({ employee: req.params.id });
+  await Leave.deleteMany({ employee: req.params.id });
+  await Task.deleteMany({ assignedTo: req.params.id });
 
   await Employee.findByIdAndDelete(req.params.id);
 
